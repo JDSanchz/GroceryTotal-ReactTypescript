@@ -1,1 +1,2 @@
-# GroceryTotal-ReactTypescript
+# Grocery List App
+A sleek, responsive web application crafted using React. Optimized for both desktop and mobile, it elegantly manages your grocery items with intuitive add and delete functions. Showcases meticulous design principles, attention to user experience, and a commitment to clean, maintainable code.
