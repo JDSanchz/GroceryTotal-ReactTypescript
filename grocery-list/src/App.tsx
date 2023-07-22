@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react'; // Added useEffect import
+import React, { useState, useEffect } from 'react';
+import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { GroceryItem } from './types';
 
 function App() {
-  // Retrieve items from localStorage on initial load
   const savedItems = JSON.parse(localStorage.getItem('groceryItems') || '[]');
   const [groceryItems, setGroceryItems] = useState<GroceryItem[]>(savedItems);
   const [itemName, setItemName] = useState<string>('');
@@ -27,13 +27,39 @@ function App() {
     setGroceryItems(updatedItems);
   };
 
-  // UseEffect to save items to localStorage whenever they change
   useEffect(() => {
     localStorage.setItem('groceryItems', JSON.stringify(groceryItems));
   }, [groceryItems]);
 
+  const handleDragEnd = (result: any) => {
+    if (!result.destination) return;
+
+    const items = Array.from(groceryItems);
+    const [reorderedItem] = items.splice(result.source.index, 1);
+    items.splice(result.destination.index, 0, reorderedItem);
+
+    setGroceryItems(items);
+  };
+
   return (
-    <div className="App">
+    <DragDropContext onDragEnd={handleDragEnd}>
+      <Droppable droppableId="groceryItems">
+        {(provided) => (
+          <ul {...provided.droppableProps} ref={provided.innerRef}>
+            {groceryItems.map((item, index) => (
+              <Draggable key={item.id} draggableId={item.id.toString()} index={index}>
+                {(provided) => (
+                  <li ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
+                    {item.name} - ${item.price.toFixed(2)}
+                    <button className="delete-button" onClick={() => handleDeleteItem(item.id)} style={{marginLeft: '10px'}}>❌</button>
+                  </li>
+                )}
+              </Draggable>
+            ))}
+            {provided.placeholder}
+          </ul>
+        )}
+      </Droppable>
       <div>
         <input
           value={itemName}
@@ -48,16 +74,8 @@ function App() {
         />
         <button onClick={handleAddItem}>Add Item</button>
       </div>
-      <ul>
-        {groceryItems.map((item) => (
-          <li key={item.id}>
-            {item.name} - ${item.price.toFixed(2)}
-            <button className="delete-button" onClick={() => handleDeleteItem(item.id)} style={{marginLeft: '10px'}}>❌</button>
-          </li>
-        ))}
-      </ul>
       <p>Total: ${groceryItems.reduce((acc, item) => acc + item.price, 0).toFixed(2)}</p>
-    </div>
+    </DragDropContext>
   );
 }
 
